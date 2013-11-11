@@ -1,12 +1,22 @@
 package client
 
 import (
-	"bytes"
+	"encoding/json"
 	"io"
 	"log"
 )
 
-func (client Client) GetEvents(collection string, key string, kind string) (*bytes.Buffer, error) {
+type EventResults struct {
+	Count   uint64  `json:"count"`
+	Results []Event `json:"results"`
+}
+
+type Event struct {
+	Timestamp uint64                 `json:"timestamp"`
+	Value     map[string]interface{} `json:"value"`
+}
+
+func (client Client) GetEvents(collection string, key string, kind string) (*EventResults, error) {
 	resp, err := client.doRequest("GET", collection+"/"+key+"/events/"+kind, nil)
 
 	if err != nil {
@@ -20,10 +30,11 @@ func (client Client) GetEvents(collection string, key string, kind string) (*byt
 		return nil, newError(resp)
 	}
 
-	buf := new(bytes.Buffer)
-	_, err = buf.ReadFrom(resp.Body)
+	decoder := json.NewDecoder(resp.Body)
+	results := new(EventResults)
+	err = decoder.Decode(results)
 
-	return buf, err
+	return results, err
 }
 
 func (client Client) PutEvent(collection string, key string, kind string, value io.Reader) error {

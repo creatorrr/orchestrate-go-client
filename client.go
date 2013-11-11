@@ -1,3 +1,4 @@
+// Package client implements a basic Orchestrate client
 package client
 
 import (
@@ -5,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	r "reflect"
 )
 
 const (
@@ -22,6 +24,7 @@ type OrchestrateError struct {
 	Locator string `json:"locator"`
 }
 
+// NewClient returns a new orchestrate client.
 func NewClient(authToken string) *Client {
 	httpClient := &http.Client{}
 
@@ -59,4 +62,30 @@ func (client Client) doRequest(method, trailingPath string, body io.Reader) (*ht
 	}
 
 	return client.HttpClient.Do(req)
+}
+
+func ValueToStruct(value map[string]interface{}, dest interface{}) bool {
+	structVal := r.Indirect(r.ValueOf(dest))
+	structType := structVal.Type()
+
+	for i := 0; i < structType.NumField(); i++ {
+		structField := structType.Field(i)
+		name := structField.Name
+
+		if jField := structField.Tag.Get("json"); jField != "" {
+			name = jField
+		}
+
+		if fieldValue, present := value[name]; present {
+			fieldVal := r.ValueOf(fieldValue)
+
+			if fieldVal.Type() != structField.Type {
+				fieldVal = fieldVal.Convert(structField.Type)
+			}
+
+			structVal.FieldByName(structField.Name).Set(fieldVal)
+		}
+	}
+
+	return true
 }

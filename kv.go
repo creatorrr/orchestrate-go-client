@@ -2,32 +2,36 @@ package client
 
 import (
 	"bytes"
-	"io"
+	"encoding/json"
 	"log"
 )
 
-func (client Client) Get(collection string, key string) (*bytes.Buffer, error) {
+func (client Client) Get(collection string, key string, value interface{}) error {
 	resp, err := client.doRequest("GET", collection+"/"+key, nil)
 
 	if err != nil {
 		log.Fatal(err)
-		return nil, err
+		return err
 	}
 
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
-		return nil, newError(resp)
+		return newError(resp)
 	}
 
-	buf := new(bytes.Buffer)
-	_, err = buf.ReadFrom(resp.Body)
+	decoder := json.NewDecoder(resp.Body)
+	err = decoder.Decode(value)
 
-	return buf, err
+	return err
 }
 
-func (client Client) Put(collection string, key string, value io.Reader) error {
-	resp, err := client.doRequest("PUT", collection+"/"+key, value)
+func (client Client) Put(collection string, key string, value interface{}) error {
+	buf := new(bytes.Buffer)
+	encoder := json.NewEncoder(buf)
+	encoder.Encode(value)
+
+	resp, err := client.doRequest("PUT", collection+"/"+key, buf)
 
 	if err != nil {
 		log.Fatal(err)

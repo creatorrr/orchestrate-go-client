@@ -13,11 +13,15 @@ type SearchResults struct {
 }
 
 type SearchResult struct {
-	Collection string                 `json:"collection"`
-	Key        string                 `json:"key"`
-	Ref        string                 `json:"ref"`
-	Score      float64                `json:"score"`
-	Value      map[string]interface{} `json:"value"`
+	Path  ResultPath             `json:"path"`
+	Score float64                `json:"score"`
+	Value map[string]interface{} `json:"value"`
+}
+
+type ResultPath struct {
+	Collection string `json:"collection"`
+	Key        string `json:"key"`
+	Ref        string `json:"ref"`
 }
 
 func (client Client) Search(collection string, query string) (*SearchResults, error) {
@@ -39,12 +43,12 @@ func (client Client) Search(collection string, query string) (*SearchResults, er
 	}
 
 	decoder := json.NewDecoder(resp.Body)
-	result := new(SearchResults)
-	err = decoder.Decode(result)
+	results := new(SearchResults)
+	err = decoder.Decode(results)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	return result, err
+	return results, err
 }
