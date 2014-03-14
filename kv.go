@@ -3,14 +3,12 @@ package client
 import (
 	"bytes"
 	"encoding/json"
-	"log"
 )
 
 func (client Client) Get(collection string, key string, value interface{}) error {
 	resp, err := client.doRequest("GET", collection+"/"+key, nil)
 
 	if err != nil {
-		log.Fatal(err)
 		return err
 	}
 
@@ -34,7 +32,6 @@ func (client Client) Put(collection string, key string, value interface{}) error
 	resp, err := client.doRequest("PUT", collection+"/"+key, buf)
 
 	if err != nil {
-		log.Fatal(err)
 		return err
 	}
 

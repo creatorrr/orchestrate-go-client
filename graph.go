@@ -3,7 +3,6 @@ package client
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"strings"
 )
 
@@ -25,7 +24,6 @@ func (client Client) GetRelations(collection string, key string, hops []string) 
 	resp, err := client.doRequest("GET", fmt.Sprintf("%v/%v/relations/%v", collection, key, relationsPath), nil)
 
 	if err != nil {
-		log.Fatal(err)
 		return nil, err
 	}
 
@@ -40,7 +38,7 @@ func (client Client) GetRelations(collection string, key string, hops []string) 
 	err = decoder.Decode(result)
 
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	return result, err
@@ -50,7 +48,6 @@ func (client Client) PutRelation(sourceCollection string, sourceKey string, kind
 	resp, err := client.doRequest("PUT", fmt.Sprintf("%v/%v/relation/%v/%v/%v", sourceCollection, sourceKey, kind, sinkCollection, sinkKey), nil)
 
 	if err != nil {
-		log.Fatal(err)
 		return err
 	}
 

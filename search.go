@@ -2,7 +2,6 @@ package client
 
 import (
 	"encoding/json"
-	"log"
 	"net/url"
 	"strconv"
 )
@@ -35,7 +34,6 @@ func (client Client) Search(collection string, query string, limit int, offset i
 	resp, err := client.doRequest("GET", collection+"?"+queryVariables.Encode(), nil)
 
 	if err != nil {
-		log.Fatal(err)
 		return nil, err
 	}
 
@@ -50,7 +48,7 @@ func (client Client) Search(collection string, query string, limit int, offset i
 	err = decoder.Decode(results)
 
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	return results, err
